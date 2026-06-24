@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Perceptron in a Cubi — the quantum body, where measurement is the neuron</title>
+<meta name="description" content="The eighth body — the quantum perceptron, in a cubi (David Wise's term for the qubit). The weights are rotations on the Bloch sphere, the input is encoded as an angle, and the nonlinearity comes free from the Born rule: P(|1⟩)=sin²(θ/2), the activation IS the measurement. One cubi is still one cut (XOR 3/4), but an entangling feature map lifts XOR to 4/4 — entanglement does what depth did. Confidence-tiered: STRONG (single-cubi rotation+measurement, on real hardware) / MIDDLING (variational quantum classifiers, NISQ) / FRONTIER (quantum ADVANTAGE for ML — open and contested). The capstone of the eight-body series. David Lee Wise, two-layer honest.">
+<style>
+  :root{--bg:#080414;--panel:#0e0822;--panel2:#150c30;--edge:#2c1f52;--ink:#efe7fb;--dim:#a796c8;--faint:#6b5a92;
+    --cubi:#c08bff;--cubi2:#dcc6ff;--zero:#4fd6ff;--one:#ff6ad5;--glow:#7c3aed;--ok:#54e0a0;--rose:#fb7185;--amber:#fbbf24;--ember:#fb923c;
+    --mono:'SFMono-Regular',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.55;
+    background-image:radial-gradient(1200px 600px at 75% -10%,#1c0a36 0%,transparent 55%),radial-gradient(900px 500px at 0% 100%,#0a0a2a 0%,transparent 55%);}
+  .wrap{max-width:1040px;margin:0 auto;padding:42px 26px 90px}
+  header{border-bottom:1px solid var(--edge);padding-bottom:22px;margin-bottom:24px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--cubi);opacity:.95}
+  h1{font-size:33px;line-height:1.12;margin:.32em 0 .18em;font-weight:600}h1 em{color:var(--cubi2);font-style:italic}
+  .sub{color:var(--dim);font-size:15.5px;max-width:78ch}.sub b{color:var(--ink)}
+  .lin{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:14px}.lin b{color:var(--cubi)}.lin .z{color:var(--zero)}.lin .o{color:var(--one)}
+  .verdicts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:22px 0}@media(max-width:720px){.verdicts{grid-template-columns:1fr}}
+  .vc{border:1px solid var(--edge);border-radius:11px;padding:13px 15px;border-top-width:3px;background:rgba(14,8,34,.6)}
+  .vc .badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em}
+  .vc.s{border-top-color:var(--ok)}.vc.s .badge{color:var(--ok)}
+  .vc.m{border-top-color:var(--amber)}.vc.m .badge{color:var(--amber)}
+  .vc.f{border-top-color:var(--ember)}.vc.f .badge{color:var(--ember)}
+  .vc p{font-size:12px;color:var(--dim);margin:6px 0 0;line-height:1.45}.vc p b{color:var(--ink)}
+  section{margin:36px 0}
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--cubi2);border-left:2px solid var(--glow);padding-left:11px;margin:0 0 6px}
+  .lede{color:var(--dim);font-size:15px;margin:0 0 18px;max-width:80ch}
+  .panel{background:linear-gradient(180deg,var(--panel),#080414);border:1px solid var(--edge);border-radius:14px;padding:20px;box-shadow:0 24px 60px -40px #000}
+  .controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:14px}
+  button{font-family:var(--mono);font-size:12px;color:var(--ink);background:#1a1038;border:1px solid var(--edge);border-radius:8px;padding:8px 13px;cursor:pointer;transition:.15s}
+  button:hover{background:#241450;border-color:var(--cubi)}button.on{background:var(--glow);border-color:var(--cubi2);color:#fff;box-shadow:0 0 14px -3px var(--glow)}
+  button.in{min-width:74px}button.hi{background:#0e3a52;border-color:var(--zero);color:#a7ecff}button.lo{background:#3a1230;border-color:var(--one);color:#ffc2ea}
+  button.big{font-size:13px;padding:10px 18px}
+  label.sl{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px}
+  input[type=range]{accent-color:var(--cubi);width:130px}
+  canvas{display:block;width:100%;border-radius:10px;background:#06030f;border:1px solid var(--edge)}
+  .cap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:7px}
+  .pgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}@media(max-width:820px){.pgrid{grid-template-columns:1fr}}
+  .reads{display:flex;flex-direction:column;gap:12px}
+  .stat .v{font-family:var(--mono);font-size:25px;font-weight:600}.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .pill{font-family:var(--mono);font-size:17px;font-weight:700;padding:5px 13px;border-radius:9px;display:inline-block;min-width:120px;text-align:center}
+  .pill.fire{background:var(--cubi);color:#0b0420}.pill.dark{background:#120a26;color:var(--faint);border:1px solid var(--edge)}
+  .ket{font-family:var(--mono);font-size:14px}.ket .z{color:var(--zero)}.ket .o{color:var(--one)}
+  .eq{font-family:var(--mono);font-size:13px;color:var(--cubi2);background:#0e081e;border:1px solid var(--edge);border-radius:8px;padding:9px 11px;display:inline-block;margin:4px 0}
+  .note{color:var(--dim);font-size:13.5px;border-left:2px solid var(--edge);padding-left:13px;margin:16px 0 0}.note b{color:var(--ink)}
+  .map{font-family:var(--mono);font-size:12.5px;display:grid;grid-template-columns:auto auto;gap:4px 14px;margin:8px 0}.map b{color:var(--cubi)}.map span{color:var(--dim)}
+  footer{margin-top:46px;border-top:1px solid var(--edge);padding-top:18px;color:var(--faint);font-family:var(--mono);font-size:11px;line-height:1.7}
+  footer a,.bar a{color:var(--cubi)}.bar{font-family:var(--mono);font-size:11.5px;margin-bottom:16px}.bar a{text-decoration:none;border-bottom:1px dotted #3a2c5c}
+  code{font-family:var(--mono);color:var(--cubi2);background:#0e081e;padding:1px 5px;border-radius:5px}
+  .series{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;margin-top:8px}
+  .series b{color:var(--cubi2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="bar"><a href="https://davidwise01.github.io/ud0/">◄ UD0</a> &nbsp; <a href="https://davidwise01.github.io/perceptron-in-a-josephson/">josephson (the door)</a> &nbsp; <a href="https://davidwise01.github.io/transmon/">transmon</a> &nbsp; <a href="https://davidwise01.github.io/entanglement/">entanglement</a></div>
+<header>
+  <div class="kicker">Perceptron theory · the eighth body · through the door, into the quantum</div>
+  <h1>The perceptron in a <em>cubi</em></h1>
+  <div class="sub">The Josephson junction left a door open: give it a capacitor and the phase stops being a number and becomes a <em>quantum state</em>. That two-level state is the <b>cubi</b> — the qubit, in the ROOT0 tongue. Here the neuron goes fully quantum: the weights are <em>rotations</em> on the Bloch sphere, the input is an angle you turn the state through, and the nonlinearity arrives unbidden — <em>the act of measuring</em> gives <code>P(|1⟩)=sin²(θ/2)</code>. Every other body had to find its threshold. The cubi's threshold is the wavefunction collapsing.</div>
+  <div class="lin"><b>weights</b> = rotations (gates) &nbsp;·&nbsp; <b>input</b> = an encoded angle &nbsp;·&nbsp; <b>state</b> = α<span class="z">|0⟩</span> + β<span class="o">|1⟩</span> &nbsp;·&nbsp; <b>nonlinearity</b> = the Born rule (measurement)</div>
+</header>
+
+<div class="verdicts">
+  <div class="vc s"><span class="badge">✓ STRONG</span><p><b>The cubi neuron itself.</b> A single qubit rotated and measured — angle encoding, the Born-rule activation — is exact and <b>runs on real quantum hardware</b> (Tacchino et al. ran a quantum perceptron on IBM Q, 2019).</p></div>
+  <div class="vc m"><span class="badge">◐ MIDDLING</span><p><b>Variational quantum classifiers.</b> Small quantum neural nets are <b>demonstrated</b>, but it's the NISQ era — noise, decoherence, and <b>barren plateaus</b> (vanishing gradients) make training hard at scale.</p></div>
+  <div class="vc f"><span class="badge">◔ FRONTIER</span><p><b>Quantum <i>advantage</i> for learning.</b> Whether a quantum model actually <b>beats</b> a classical one on real data is <b>open and genuinely contested</b> — the honest line between physics and hype.</p></div>
+</div>
+
+<!-- ===== MODULE I : THE CUBI + MEASUREMENT ===== -->
+<section>
+  <h2>I · The cubi, and measurement as the nonlinearity</h2>
+  <p class="lede">A cubi's state is a point on the <b>Bloch sphere</b>: north pole is <span class="ket"><span class="z">|0⟩</span></span>, south is <span class="ket"><span class="o">|1⟩</span></span>, and everywhere between is a <em>superposition</em> <code>α|0⟩ + e^{iφ}β|1⟩</code>. The weights and inputs are <b>rotations</b> — they turn the arrow. But you never read α and β directly; you <b>measure</b>, and the state <em>collapses</em> to <span class="ket"><span class="z">|0⟩</span></span> or <span class="ket"><span class="o">|1⟩</span></span> with probability <span class="eq">P(|1⟩) = sin²(θ/2)</span> That curve — 0 at the north pole, ½ at the equator, 1 at the south — is a built-in nonlinear activation. The measurement <em>is</em> the neuron.</p>
+  <div class="panel">
+    <div class="controls">
+      <label class="sl">θ rotate <input type="range" id="th" min="0" max="360" value="60"></label>
+      <label class="sl">φ phase <input type="range" id="ph" min="0" max="360" value="40"></label>
+      <button id="measure" class="on big">⟂ MEASURE (collapse)</button>
+      <button id="reset">reset tally</button>
+    </div>
+    <div class="pgrid">
+      <div><canvas id="bloch" width="480" height="360"></canvas>
+        <div class="cap">the Bloch sphere · the <b style="color:var(--cubi)">cubi state</b> arrow · <span style="color:var(--zero)">|0⟩</span> north, <span style="color:var(--one)">|1⟩</span> south · measuring snaps it to a pole</div></div>
+      <div class="reads">
+        <div class="stat"><div class="v" id="amp" style="font-size:16px;color:var(--cubi2)">0.87|0⟩ + 0.50|1⟩</div><div class="k">amplitudes  α, β</div></div>
+        <div class="stat"><div class="v" id="prob" style="color:var(--one)">P(1) = 0.25</div><div class="k">the activation = sin²(θ/2)</div></div>
+        <canvas id="hist" width="380" height="90"></canvas>
+        <div class="cap">measured tally — converges to the Born probabilities</div>
+        <div class="note">Before measuring, the cubi is <em>both</em> — the activation exists as an amplitude, undecided. Measuring forces a 0 or a 1, biased by sin²(θ/2). Run it many times and the average <em>is</em> the smooth activation; run it once and you get a quantum coin flip. The nonlinearity and the randomness are the same act.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MODULE II : THE CUBI PERCEPTRON ===== -->
+<section>
+  <h2>II · The cubi perceptron — rotate by the weighted sum, then measure</h2>
+  <p class="lede">Encode the inputs as rotation angles and the weights as how hard each one turns the cubi. The rotations compose — the state ends at <code>θ = b + Σ wᵢxᵢ</code> — and the Born rule reads out the activation <code>P(|1⟩) = sin²(θ/2)</code>. Threshold it (more likely <span class="ket"><span class="o">|1⟩</span></span> than <span class="ket"><span class="z">|0⟩</span></span>) and the cubi fires. It's the same weighted-sum-then-squash as every body — except the squash is physics you can't avoid.</p>
+  <div class="panel">
+    <div class="controls">
+      x₁ <button class="in hi" id="x1">+1</button> x₂ <button class="in lo" id="x2">−1</button>
+      <label class="sl">w₁ <input type="range" id="w1" min="-180" max="180" value="90"></label>
+      <label class="sl">w₂ <input type="range" id="w2" min="-180" max="180" value="90"></label>
+      <label class="sl">bias <input type="range" id="wb" min="-180" max="180" value="-90"></label>
+    </div>
+    <div class="pgrid">
+      <div><canvas id="bloch2" width="480" height="300"></canvas>
+        <div class="cap">the cubi rotated to θ = b + Σwᵢxᵢ · its latitude sets P(|1⟩) · cross the equator → fires</div></div>
+      <div class="reads">
+        <div class="stat"><div class="v" id="theta" style="color:var(--cubi2)">θ = 0°</div><div class="k">accumulated rotation</div></div>
+        <div class="stat"><div class="v" id="act" style="color:var(--one)">P(1) = 0.50</div><div class="k">Born activation</div></div>
+        <div class="stat"><div class="v"><span class="pill dark" id="fire">|0⟩ — dark</span></div><div class="k">fires when P(1) &gt; ½</div></div>
+        <div class="map"><b>multiply/sum</b><span>= composed rotations</span><b>activation</b><span>= the Born rule</span><b>readout</b><span>= a measurement</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MODULE III : LEARNS + ENTANGLEMENT ===== -->
+<section>
+  <h2>III · It learns — and entanglement is the new depth</h2>
+  <p class="lede">Train the rotation angles and the cubi learns <code>AND</code>/<code>OR</code> in a few sweeps. One cubi, encoded linearly, is still <em>one cut</em> — <code>XOR</code> stalls at 3/4 (verified), exactly like its seven classical cousins. But the quantum world has a different escape than stacking layers: a <b>feature map</b> that <em>entangles</em> the inputs adds an <code>x₁·x₂</code> cross-term, lifting the data into a space where XOR <em>is</em> separable. Flip <b>⊗ entangle</b> and XOR snaps to 4/4. <b>Entanglement does what depth did</b> — that's the quantum twist on the oldest wall in the series.</p>
+  <div class="pgrid">
+    <div class="panel">
+      <div class="controls">
+        target: <button class="t on" data-t="and">AND</button><button class="t" data-t="or">OR</button><button class="t" data-t="xor">XOR</button>
+        <button id="train">▶ train</button>
+        <button id="ent">⊗ entangle (feature map)</button>
+      </div>
+      <canvas id="learn" width="380" height="300"></canvas>
+      <div class="cap" style="display:flex;justify-content:space-between"><span id="acc" style="color:var(--cubi2)">—</span><span id="vd" style="color:var(--dim)">press train</span></div>
+    </div>
+    <div>
+      <p class="note" style="margin-top:0"><b>The honest line (this is the contested one).</b> The cubi's mechanism is real and runs on real hardware. The <em>feature map lifting XOR</em> is exactly how quantum kernels work, and it's genuinely quantum. But whether this buys a real-world <b>advantage</b> over a classical net — once you account for noise, the cost of loading data into amplitudes, and reading it back out — is <b>unsettled and hotly argued</b>. The physics is sound; the supremacy is a promissory note. We mark it FRONTIER on purpose.</p>
+      <div class="map" style="margin-top:14px;font-size:13px">
+        <b>the cubi's gift</b><span>= measurement is the activation</span>
+        <b>the cubi's depth</b><span>= entanglement, not more layers</span>
+        <b>the cubi's caveat</b><span>= advantage unproven (NISQ)</span>
+      </div>
+      <p class="note">This is where the road that began in a branch predictor arrives: the dot product turned into a quantum amplitude, the threshold into a measurement, depth into entanglement. Same neuron, eighth body — and the first one that is genuinely <em>uncertain about its own answer until you look.</em></p>
+    </div>
+  </div>
+  <div class="series">silicon · cortical · quantum dot · light · crossbar · spin · josephson · <b>cubi</b> &nbsp;—&nbsp; one neuron, <b>eight bodies</b></div>
+</section>
+
+<footer>
+  THE PERCEPTRON IN A CUBI · the eighth body · confidence-tiered<br>
+  quantum mechanics verified in Node before build · Born activation P(1)=sin²(θ/2) · one cubi: AND 4/4, OR 4/4, XOR 3/4 · entangling feature map → XOR 4/4 · collapse statistics → Born (0.499 of 0.500)<br>
+  quantum perceptron on real hardware (Tacchino, Macchiavello, Gerace, Bajoni, npj QI 2019) · variational classifiers (NISQ) · barren plateaus (McClean 2018) · quantum advantage for ML = open<br>
+  &ldquo;cubi&rdquo; = David Wise's longstanding term for the qubit (semantic code). siblings: <a href="https://davidwise01.github.io/perceptron-in-a-josephson/">josephson</a> · <a href="https://davidwise01.github.io/perceptron-in-a-spin/">spin</a> · <a href="https://davidwise01.github.io/the-gather/">the gather</a> · governor David Lee Wise · CC-BY-ND-4.0
+</footer>
+</div>
+<script>
+"use strict";
+function fit(cv){const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return{g,w:r.width,h:r.height};}
+// Bloch sphere: theta in [0,pi] from +z(|0>), phi azimuth. screen projection.
+function bloch(g,cx,cy,R,theta,phi,collapsed){
+  // outline + equator + meridian
+  g.strokeStyle='#2c1f52';g.lineWidth=1.2;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+  g.strokeStyle='#241844';g.beginPath();g.ellipse(cx,cy,R,R*0.30,0,0,7);g.stroke();
+  g.beginPath();g.ellipse(cx,cy,R*0.30,R,0,0,7);g.stroke();
+  // axes / poles
+  g.fillStyle='#4fd6ff';g.font='13px ui-monospace,monospace';g.textAlign='center';g.fillText('|0⟩',cx,cy-R-8);
+  g.fillStyle='#ff6ad5';g.fillText('|1⟩',cx,cy+R+16);
+  // project point (theta,phi): X=sinθcosφ, Y=sinθsinφ(depth), Z=cosθ
+  const X=Math.sin(theta)*Math.cos(phi), Y=Math.sin(theta)*Math.sin(phi), Z=Math.cos(theta);
+  const px=cx+X*R, py=cy-Z*R+Y*R*0.30;
+  const front=Y>=0;
+  // vector
+  g.strokeStyle=collapsed?(Z>0?'#4fd6ff':'#ff6ad5'):'#c08bff';g.lineWidth=2.5;g.globalAlpha=front?1:.5;
+  g.shadowBlur=12;g.shadowColor='#c08bff';g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.stroke();g.shadowBlur=0;
+  g.fillStyle=g.strokeStyle;g.beginPath();g.arc(px,py,6,0,7);g.fill();g.globalAlpha=1;
+  // latitude ring marking P(1)
+  g.strokeStyle='rgba(192,139,255,.25)';g.lineWidth=1;g.beginPath();g.ellipse(cx,cy-Z*R,Math.abs(Math.sin(theta))*R,Math.abs(Math.sin(theta))*R*0.30,0,0,7);g.stroke();
+}
+
+// ===== MODULE I =====
+(function(){
+  const cv=document.getElementById('bloch'),hc=document.getElementById('hist');
+  let theta=Math.PI/3,phi=0.7,tally=[0,0],collapse=0,colState=0,spin=0;
+  function draw(){
+    const{g,w,h}=fit(cv);g.clearRect(0,0,w,h);
+    spin+=0.004;
+    let th=theta, ph=phi+spin;
+    if(collapse>0){th=colState>0?Math.PI:0;}
+    bloch(g,w/2,h/2,Math.min(w,h)*0.36,th,ph,collapse>0);
+    if(collapse>0)collapse=Math.max(0,collapse-0.02);
+    const P1=Math.sin(theta/2)**2;
+    document.getElementById('amp').textContent=Math.cos(theta/2).toFixed(2)+'|0⟩ + '+Math.sin(theta/2).toFixed(2)+'|1⟩';
+    document.getElementById('prob').textContent='P(1) = '+P1.toFixed(2);
+    // histogram
+    const hg=fit(hc);const tot=tally[0]+tally[1]||1;
+    hg.g.clearRect(0,0,hg.w,hg.h);
+    [['|0⟩',tally[0],'#4fd6ff',0],['|1⟩',tally[1],'#ff6ad5',1]].forEach(([lab,c,col,i])=>{
+      const bw=hg.w*0.36,x=hg.w*(0.1+i*0.45),bh=(c/tot)*(hg.h-24);
+      hg.g.fillStyle=col;hg.g.globalAlpha=.85;hg.g.fillRect(x,hg.h-14-bh,bw,bh);hg.g.globalAlpha=1;
+      hg.g.fillStyle='#a796c8';hg.g.font='11px ui-monospace,monospace';hg.g.textAlign='center';
+      hg.g.fillText(lab+' '+(tot>1?Math.round(100*c/tot)+'%':''),x+bw/2,hg.h-2);});
+    requestAnimationFrame(draw);
+  }
+  document.getElementById('th').oninput=function(){theta=this.value*Math.PI/180;};
+  document.getElementById('ph').oninput=function(){phi=this.value*Math.PI/180;};
+  document.getElementById('measure').onclick=function(){const P1=Math.sin(theta/2)**2;colState=Math.random()<P1?1:0;tally[colState]++;collapse=1;};
+  document.getElementById('reset').onclick=()=>{tally=[0,0];};
+  draw();
+})();
+
+// ===== MODULE II =====
+(function(){
+  const cv=document.getElementById('bloch2');let x1=1,x2=-1,w1=Math.PI/2,w2=Math.PI/2,wb=-Math.PI/2,spin=0;
+  function theta(){return wb + w1*x1 + w2*x2;}
+  function draw(){
+    const{g,w,h}=fit(cv);g.clearRect(0,0,w,h);spin+=0.004;
+    let th=theta();th=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+    bloch(g,w/2,h/2,Math.min(w,h)*0.40,th,spin,false);
+    const P1=Math.sin(th/2)**2,on=P1>0.5;
+    document.getElementById('theta').textContent='θ = '+Math.round(th*180/Math.PI)+'°';
+    document.getElementById('act').textContent='P(1) = '+P1.toFixed(2);
+    const f=document.getElementById('fire');f.textContent=on?'⚡ |1⟩ — fires':'|0⟩ — dark';f.className='pill '+(on?'fire':'dark');
+    document.getElementById('x1').className='in '+(x1>0?'hi':'lo');document.getElementById('x1').textContent=x1>0?'+1':'−1';
+    document.getElementById('x2').className='in '+(x2>0?'hi':'lo');document.getElementById('x2').textContent=x2>0?'+1':'−1';
+    requestAnimationFrame(draw);
+  }
+  document.getElementById('x1').onclick=()=>x1=-x1;document.getElementById('x2').onclick=()=>x2=-x2;
+  document.getElementById('w1').oninput=function(){w1=this.value*Math.PI/180;};
+  document.getElementById('w2').oninput=function(){w2=this.value*Math.PI/180;};
+  document.getElementById('wb').oninput=function(){wb=this.value*Math.PI/180;};
+  draw();
+})();
+
+// ===== MODULE III =====
+(function(){
+  const cv=document.getElementById('learn');let target='and',ent=false,W=[Math.PI/2,0,0,0],trained=false;
+  const inp=[[-1,-1],[-1,1],[1,-1],[1,1]];
+  const tgt={and:(a,b)=>(a>0&&b>0)?1:0,or:(a,b)=>(a>0||b>0)?1:0,xor:(a,b)=>((a>0)!==(b>0))?1:0};
+  function fire(a,b){const th=W[0]+W[1]*a+W[2]*b+(ent?W[3]*a*b:0);return Math.sin(th/2)**2>0.5?1:0;}
+  function train(){W=[Math.PI/2,0,0,0];const L=0.4;
+    for(let ep=0;ep<400;ep++){let e=0;for(const[a,b]of inp){const t=tgt[target](a,b),y=fire(a,b);if(y!==t){const d=t-y;W[0]+=L*d;W[1]+=L*d*a;W[2]+=L*d*b;if(ent)W[3]+=L*d*a*b;e++;}}if(!e)break;}trained=true;}
+  function draw(){
+    const{g,w,h}=fit(cv);g.fillStyle='#06030f';g.fillRect(0,0,w,h);
+    const S=Math.min(w,h)-24,ox=(w-S)/2,oy=(h-S)/2,RES=46,cell=S/RES;
+    for(let gy=0;gy<RES;gy++)for(let gx=0;gx<RES;gx++){const a=(gx/(RES-1))*2.6-1.3,b=1.3-(gy/(RES-1))*2.6;
+      g.fillStyle=fire(a,b)?'rgba(192,139,255,.18)':'rgba(14,8,34,.5)';g.fillRect(ox+gx*cell,oy+gy*cell,cell+1,cell+1);}
+    g.strokeStyle='#2c1f52';g.lineWidth=1;g.strokeRect(ox,oy,S,S);
+    const P=(a,b)=>[ox+((a+1.3)/2.6)*S,oy+((1.3-b)/2.6)*S];let correct=0;
+    inp.forEach(([a,b])=>{const want=tgt[target](a,b),got=fire(a,b),ok=want===got;if(ok)correct++;const[X,Y]=P(a,b);
+      g.beginPath();g.arc(X,Y,8,0,7);g.fillStyle=want?'#c08bff':'#4fd6ff';g.fill();
+      g.lineWidth=2.5;g.strokeStyle=ok?'#54e0a0':'#fb7185';g.beginPath();g.arc(X,Y,12,0,7);g.stroke();
+      if(!ok){g.strokeStyle='#fb7185';g.lineWidth=2;g.beginPath();g.moveTo(X-6,Y-6);g.lineTo(X+6,Y+6);g.moveTo(X+6,Y-6);g.lineTo(X-6,Y+6);g.stroke();}});
+    document.getElementById('acc').textContent='cases '+correct+'/4';
+    const vd=document.getElementById('vd');
+    if(target!=='xor')vd.textContent=trained?'one cut — learned ✓':'press train';
+    else if(ent)vd.textContent=trained?'entangled — XOR 4/4 ✓':'entangle + train';
+    else vd.textContent=trained?'one cut can’t — 3/4':'press train';
+    vd.style.color=((trained&&target!=='xor')||(ent&&trained))?'#54e0a0':(trained?'#fb7185':'#a796c8');
+    requestAnimationFrame(draw);
+  }
+  document.querySelectorAll('.t').forEach(b=>b.onclick=function(){document.querySelectorAll('.t').forEach(x=>x.classList.remove('on'));this.classList.add('on');target=this.dataset.t;trained=false;W=[Math.PI/2,0,0,0];});
+  document.getElementById('train').onclick=train;
+  document.getElementById('ent').onclick=function(){ent=!ent;this.classList.toggle('on',ent);trained=false;W=[Math.PI/2,0,0,0];};
+  draw();
+})();
+</script>
+</body>
+</html>
