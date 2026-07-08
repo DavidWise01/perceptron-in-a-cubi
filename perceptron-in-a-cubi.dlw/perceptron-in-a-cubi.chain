@@ -1,0 +1,9 @@
+ROOT0-DLW-CHAIN-v1
+index : 975
+slug  : perceptron-in-a-cubi
+seal  : 7cdf2c96c912a7f64c85541b9d7fd86075b7c79929a63861de7e16f451062c68
+prev  : f471c499499b7089b314718d7a14157c19a25ae894448137a5eaf949704154a0
+link  : cab2e20e8574e084e69f11411f82fefa9235b9bcacfc7a9055afddaf97dedb51
+head  : 3447d3a0533aaf1e29a8bdc67a9774884fb3ae9dbc8a17064b7a008ca3c4ec90
+
+— the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
